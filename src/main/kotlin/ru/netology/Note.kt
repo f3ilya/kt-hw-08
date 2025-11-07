@@ -1,6 +1,7 @@
 package ru.netology
 
 class NoteNotFoundException(message: String) : Exception(message)
+class CommentNotFoundException(message: String) : Exception(message)
 
 data class Comment(
     val id: Int,
@@ -44,7 +45,7 @@ object NoteService {
         for ((index, note) in notes.withIndex()) {
             if (note.id == noteId) {
                 comments += Comment(++commentId, nid = noteId, message = message)
-                notes[index] = Note(noteId, note.title, note.text, comments = note.comments + 1)
+                notes[index] = note.copy(comments = note.comments + 1)
                 return comments.last().id
             }
         }
@@ -58,7 +59,7 @@ object NoteService {
                 val iter = comments.iterator()
                 while (iter.hasNext()) {
                     val comment = iter.next()
-                    if (comment.id == noteId) {
+                    if (comment.nid == noteId) {
                         iter.remove()
                     }
                 }
@@ -71,11 +72,10 @@ object NoteService {
     fun deleteComment(commentId: Int): Boolean {
         for ((index, comment) in comments.withIndex()) {
             if (comment.id == commentId) {
-                comments[index] =
-                    Comment(id = commentId, nid = comment.nid, message = comment.message, isDeleted = true)
-                for ((index, note) in notes.withIndex()) {
+                comments[index] = comment.copy(isDeleted = true)
+                for ((indexNote, note) in notes.withIndex()) {
                     if (note.id == comment.id) {
-                        notes[index] = Note(note.id, note.title, note.text, comments = note.comments - 1)
+                        notes[indexNote] = note.copy(comments = note.comments - 1)
                         return true
                     }
                 }
@@ -95,7 +95,7 @@ object NoteService {
     ): Boolean {
         for ((index, note) in notes.withIndex()) {
             if (note.id == noteId) {
-                notes[index] = Note(noteId, title, text, comments = note.comments)
+                notes[index] = note.copy(title = title, text =  text, comments = note.comments)
                 return true
             }
         }
@@ -105,7 +105,7 @@ object NoteService {
     fun editComment(commentId: Int, message: String): Boolean {
         for ((index, comment) in comments.withIndex()) {
             if (comment.id == commentId && !comment.isDeleted) {
-                comments[index] = Comment(id = commentId, nid = comment.nid, message = message)
+                comments[index] = comment.copy(message = message)
                 return true
             }
         }
@@ -145,17 +145,19 @@ object NoteService {
             if (!comment.isDeleted && comment.nid == noteId)
                 ret += comment
         }
-        return ret
+        if (ret.size > 0) {
+            return ret
+        }
+        throw CommentNotFoundException("Comment not found")
     }
 
     fun restoreComment(commentId: Int): Boolean {
         for ((index, comment) in comments.withIndex()) {
             if (comment.id == commentId && comment.isDeleted) {
-                comments[index] =
-                    Comment(id = commentId, nid = comment.nid, message = comment.message, isDeleted = false)
-                for ((index, note) in notes.withIndex()) {
+                comments[index] = comment.copy(isDeleted = false)
+                for ((indexNote, note) in notes.withIndex()) {
                     if (note.id == comment.id) {
-                        notes[index] = Note(note.id, note.title, note.text, comments = note.comments + 1)
+                        notes[indexNote] = note.copy(comments = note.comments + 1)
                         return true
                     }
                 }

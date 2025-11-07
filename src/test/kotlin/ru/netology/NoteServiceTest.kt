@@ -169,11 +169,10 @@ class NoteServiceTest {
         assertEquals(result, "comment")
     }
 
-    @Test
+    @Test(expected = CommentNotFoundException::class)
     fun getCommentWithoutComment() {
         NoteService.add("title", "text")
-        val result = NoteService.getComment(1)
-        assertEquals(result, mutableListOf<Comment>())
+        NoteService.getComment(1)
     }
 
     @Test
