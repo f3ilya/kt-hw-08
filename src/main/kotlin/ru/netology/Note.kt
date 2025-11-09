@@ -74,7 +74,7 @@ object NoteService {
             if (comment.id == commentId) {
                 comments[index] = comment.copy(isDeleted = true)
                 for ((indexNote, note) in notes.withIndex()) {
-                    if (note.id == comment.id) {
+                    if (note.id == comment.nid) {
                         notes[indexNote] = note.copy(comments = note.comments - 1)
                         return true
                     }
@@ -156,7 +156,7 @@ object NoteService {
             if (comment.id == commentId && comment.isDeleted) {
                 comments[index] = comment.copy(isDeleted = false)
                 for ((indexNote, note) in notes.withIndex()) {
-                    if (note.id == comment.id) {
+                    if (note.id == comment.nid) {
                         notes[indexNote] = note.copy(comments = note.comments + 1)
                         return true
                     }
